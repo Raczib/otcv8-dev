@@ -126,3 +126,11 @@ ipch/
 # ReSharper is a .NET coding add-in
 _ReSharper*/
 *.[Rr]e[Ss]harper
+## Local builds
+_build/
+vc16/otclient/
+*.tlog
+*.iobj
+*.ipdb
+*.idb
+*.opendb

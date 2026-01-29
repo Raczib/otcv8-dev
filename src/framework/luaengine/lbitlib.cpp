@@ -32,6 +32,8 @@
 
 #define LUA_LIB
 
+#include <climits>
+
 extern "C" {
 #if defined(_MSC_VER) || defined(ANDROID)
 #include <luajit/lua.h>
@@ -165,7 +167,9 @@ static lua_Unsigned luaL_checkunsigned (lua_State *L, int arg) {
 
 #define LUAMOD_API  LUALIB_API
 #define LUA_BIT32LIBNAME "bit32"
+#if !defined(luaL_newlib)
 #define luaL_newlib(x, y) luaL_register(x, LUA_BIT32LIBNAME, y)
+#endif
 
 /* ----- avoid a 'symbol redefined' warning below ----- */
 
@@ -376,4 +380,3 @@ int luaopen_bit32 (lua_State *L) {
 }
 
 #undef trim
-

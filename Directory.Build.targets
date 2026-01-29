@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!--
+    Avoid build failures when AV/OneDrive holds the tlog marker file.
+    This keeps successful builds from failing at FinalizeBuildStatus.
+  -->
+  <Target Name="FinalizeBuildStatus" />
+</Project>

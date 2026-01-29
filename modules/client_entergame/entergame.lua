@@ -328,6 +328,10 @@ function EnterGame.init()
   local server = g_settings.get('server')
   local host = g_settings.get('host')
   local clientVersion = g_settings.get('client-version')
+  if not clientVersion or clientVersion == "" then
+    clientVersion = 1098
+    g_settings.set('client-version', clientVersion)
+  end
 
   if serverSelector:isOption(server) then
     serverSelector:setCurrentOption(server, false)
@@ -606,3 +610,4 @@ function EnterGame.onLoginError(err)
     EnterGame.clearAccountFields()
   end
 end
+

@@ -5,8 +5,8 @@
     <PREPROCESSOR_DEFS>
         WIN32;
         _CRT_SECURE_NO_WARNINGS;
-        _WIN32_WINNT=0x0501;
-		    WINVER=0x0501;
+        _WIN32_WINNT=0x0601;
+		    WINVER=0x0601;
         OTCLIENT;
         CRASH_HANDLER;
         FW_GRAPHICS;
@@ -15,6 +15,7 @@
         FW_SOUND;
         FW_CAM;
         AB;
+        GLEW_STATIC;
         NOMINMAX;
     </PREPROCESSOR_DEFS>
     
@@ -30,14 +31,12 @@
         shell32.lib;
         gdi32.lib;
         advapi32.lib;
-    		Ole32.lib;
+		Ole32.lib;
         psapi.lib;
         bcrypt.lib;		
-        ucrt.lib;
-        vcruntime.lib;
-        msvcrt.lib;
-        mincore_downlevel.lib;
-        mincore.lib;    
+        crypt32.lib;
+        iphlpapi.lib;
+        avrt.lib;
     </OTCLIENT_LIBDEPS>
   </PropertyGroup>
   <PropertyGroup>
@@ -46,8 +45,10 @@
   </PropertyGroup>
   <PropertyGroup Label="Globals">
    <VcpkgConfiguration>Release</VcpkgConfiguration>
-	 <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static</VcpkgTriplet>
+	 <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static-md</VcpkgTriplet>
 	 <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static</VcpkgTriplet>
+    <!-- Ensure msbuild can locate vcpkg when run from CLI -->
+    <VcpkgRoot Condition="'$(VcpkgRoot)'==''">C:\vcpkg</VcpkgRoot>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(BUILD_REVISION)' != '' ">
     <PREPROCESSOR_DEFS>
@@ -59,11 +60,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <ObjectFileName>$(IntDir)\obj_r\%(RelativeDir)</ObjectFileName>
+      <AdditionalIncludeDirectories>$(VcpkgRoot)\installed\$(VcpkgTriplet)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(OTCLIENT_LIBDEPS)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VcpkgRoot)\installed\$(VcpkgTriplet)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
       <LargeAddressAware>true</LargeAddressAware>
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>

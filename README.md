@@ -1,61 +1,136 @@
-# OTCv8 Developer Editon (sources)
+# OTCv8 (Windows) ? Build Guide for Friends
 
-Ready to use binaries are available in [OTCv8/otclientv8](https://github.com/OTCv8/otclientv8) repository.
+This guide is based on a working build on **Windows** using **Visual Studio 2026 Build Tools**.
 
-OTCv8 sources. You can add whatever you want and create pull request with your changes.
-Accepted pull requests will be added to official OTCv8 version, so if you want a new feature in OTCv8, just add it here and wait for approval.
-If you add custom feature, make sure it's optional and can be enabled via g_game.enableFeature function, otherwise your pull request will be rejected.
+## TL;DR
+- **MSVC toolset:** v145
+- **MSVC build tools version:** 14.50.35717
+- **Windows SDK:** 10.0 (latest)
+- **vcpkg root:** `C:\vcpkg`
+- **Triplet:** `x86-windows-static-md`
+- **Repo location:** avoid OneDrive (use a normal folder like `C:\Users\<you>\Documents\TibiaX\\otclient`)
 
-This repository uses Github Actions to build and test OTCv8 automaticlly whenever you push changes to repository.
+---
 
-Check Actions tab to see test results or to download latest binaries. ![Workflow status](https://github.com/OTCv8/otcv8-dev/actions/workflows/ci-cd.yml/badge.svg)
+## 1) Install Visual Studio Build Tools (Required)
+Install **Visual Studio 2026 Build Tools** with:
+- MSVC v145 toolset
+- Windows 10/11 SDK (10.0.x, ?latest?)
 
-## Compilation
+Verify that **MSVC Build Tools Version** is **14.50.35717**.
 
-### Automatic
+---
 
-You can clone repoistory and use github action build-on-request workload.
+## 2) Install vcpkg
+Use a fixed path (this guide assumes `C:\vcpkg`).
 
-### Windows
-
-You need visual studio 2019 and vcpkg with commit `3b3bd424827a1f7f4813216f6b32b6c61e386b2e` ([download](https://github.com/microsoft/vcpkg/archive/3b3bd424827a1f7f4813216f6b32b6c61e386b2e.zip)).
-
-Then you install vcpkg dependencies:
-```bash
-vcpkg install boost-iostreams:x86-windows-static boost-asio:x86-windows-static boost-beast:x86-windows-static boost-system:x86-windows-static boost-variant:x86-windows-static boost-lockfree:x86-windows-static boost-process:x86-windows-static boost-program-options:x86-windows-static luajit:x86-windows-static glew:x86-windows-static boost-filesystem:x86-windows-static boost-uuid:x86-windows-static physfs:x86-windows-static openal-soft:x86-windows-static libogg:x86-windows-static libvorbis:x86-windows-static zlib:x86-windows-static libzip:x86-windows-static openssl:x86-windows-static
+```powershell
+cd C:\
+git clone https://github.com/microsoft/vcpkg.git
+C:\vcpkg\bootstrap-vcpkg.bat
 ```
 
-and then you can compile static otcv8 version.
+Update ports:
+```powershell
+cd C:\vcpkg
+git pull
+C:\vcpkg\vcpkg.exe update
+```
 
-### Linux
+---
 
-on linux you need:
-- vcpkg from commit `761c81d43335a5d5ccc2ec8ad90bd7e2cbba734e`
-- boost >=1.67 and libzip-dev, physfs >= 3
-- gcc >=9
+## 3) Install dependencies with vcpkg
+Always use the **x86-windows-static-md** triplet.
 
-Then just run mkdir build && cd build && cmake .. && make -j8
+```powershell
+C:\vcpkg\vcpkg.exe install ^
+  boost-system:x86-windows-static-md ^
+  boost-filesystem:x86-windows-static-md ^
+  boost-headers:x86-windows-static-md ^
+  boost-cmake:x86-windows-static-md ^
+  zlib:x86-windows-static-md ^
+  bzip2:x86-windows-static-md ^
+  glew:x86-windows-static-md ^
+  openssl:x86-windows-static-md ^
+  physfs:x86-windows-static-md ^
+  openal-soft:x86-windows-static-md ^
+  libogg:x86-windows-static-md ^
+  libvorbis:x86-windows-static-md ^
+  luajit:x86-windows-static-md ^
+  fmt:x86-windows-static-md
+```
 
-### Android
+If you see headers missing after install, force rebuild without binary cache:
+```powershell
+C:\vcpkg\vcpkg.exe install <package>:x86-windows-static-md --no-binarycaching --host-triplet=x64-windows
+```
 
-To compile on android you need to create C:\android with
-- android-ndk-r21b https://dl.google.com/android/repository/android-ndk-r21d-windows-x86_64.zip
-- libs from android_libs.7z
+---
 
-Also install android extension for visual studio
-In visual studio go to options -> cross platform -> c++ and set Android NDK to C:\android\android-ndk-r21b
-Right click on otclientv8 -> proporties -> general and change target api level to android-25
+## 4) Build (PowerShell)
 
-Put data.zip in android/otclientv8/assets
-You can use powershell script create_android_assets.ps1 to create them automaticly (won't be encrypted)
+**Important:** Do not build from a OneDrive folder. OneDrive/AV can lock MSBuild tlog files.
 
-## Useful tips
+From PowerShell:
 
-- To run tests manually, unpack tests.7z and use command `otclient_debug.exe --test`
-- To test mobile UI use command `otclient_debug.exe --mobile`
+```powershell
+$intDir='C:\Users\<you>\Documents\_build\otcv8\OpenGL\'
+New-Item -ItemType Directory -Force -Path $intDir | Out-Null
 
-## Links
+cmd /s /c '"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" -arch=x86 -host_arch=x64 && set VCToolsVersion=14.50.35717 && cd /d C:\Users\<you>\Documents\TibiaX\\otclient && msbuild vc16\otclient.sln /p:Configuration=OpenGL /p:Platform=Win32 /p:PlatformToolset=v145 /p:VCToolsVersion=14.50.35717 /p:VcpkgRoot=C:\vcpkg /p:VcpkgTriplet=x86-windows-static-md /p:VcpkgUseStatic=false /p:VcpkgAppLocalDeps=false /p:IntDir=C:\Users\<you>\Documents\_build\otcv8\OpenGL\'
+```
 
-- Discord: https://discord.gg/feySup6
-- Forum: http://otclient.net
-- Email: otclient@otclient.ovh
+Output:
+```
+C:\Users\<you>\Documents\TibiaX\\otclient\otclient_gl.exe
+```
+
+---
+
+## 5) Common Problems & Fixes
+
+### A) `boost/config.hpp` or `boost/system/config.hpp` missing
+Reinstall boost headers + cmake:
+```powershell
+C:\vcpkg\vcpkg.exe install boost-cmake:x86-windows-static-md boost-headers:x86-windows-static-md --no-binarycaching --host-triplet=x64-windows
+```
+
+### B) `openssl/conf.h` missing
+Reinstall OpenSSL:
+```powershell
+C:\vcpkg\vcpkg.exe install openssl:x86-windows-static-md --no-binarycaching --host-triplet=x64-windows
+```
+
+### C) `physfs.h` / `AL/al.h` missing
+Reinstall OpenAL + PhysFS:
+```powershell
+C:\vcpkg\vcpkg.exe install openal-soft:x86-windows-static-md physfs:x86-windows-static-md --no-binarycaching --host-triplet=x64-windows
+```
+
+### D) `luajit/lua.h` missing
+Reinstall LuaJIT:
+```powershell
+C:\vcpkg\vcpkg.exe install luajit:x86-windows-static-md --no-binarycaching --host-triplet=x64-windows
+```
+
+### E) `MSB3061 unable to delete ... unsuccessfulbuild`
+This is usually OneDrive/AV locking the tlog file. Fix:
+- Move the repo out of OneDrive.
+- Build with a custom `IntDir` on a normal local path (as shown above).
+
+---
+
+## 6) Build script (optional)
+If you want a 1?click build, use `build_windows.sh` (requires Git Bash or MSYS2).
+
+---
+
+## Notes
+- This build uses **Win32** (x86) + OpenGL configuration.
+- Triplet must match: **x86-windows-static-md**.
+- Do not mix different vcpkg roots.
+
+---
+
+If something fails, share the exact error output and we?ll add it to this guide.
+
